@@ -38,6 +38,7 @@ def create_app(start_background_scheduler=True):
     from routes.dashboard import dashboard_bp
     from routes.reports import reports_bp
     from routes.notifications import notifications_bp
+    from routes.cron import cron_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
@@ -49,6 +50,7 @@ def create_app(start_background_scheduler=True):
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(reports_bp)
     app.register_blueprint(notifications_bp)
+    app.register_blueprint(cron_bp)
 
     @app.route('/')
     def home():
@@ -64,11 +66,19 @@ def create_app(start_background_scheduler=True):
             unread_count = Notification.query.filter_by(user_id=current_user.id, is_read=False).count()
         return dict(unread_count=unread_count, now=datetime.utcnow)
 
-    # Only start the tick loop in the actual serving process — under the
-    # Werkzeug debug reloader, the parent process re-execs a child with
-    # WERKZEUG_RUN_MAIN=true, and we don't want two scheduler threads
-    # ticking against the same DB.
-    if start_background_scheduler and (os.environ.get('WERKZEUG_RUN_MAIN') == 'true' or not app.debug):
+    # On Vercel (or any serverless host), a function invocation doesn't stay
+    # alive long enough for an in-process APScheduler thread to be useful —
+    # /api/cron/tick (routes/cron.py) does the same work, triggered by a
+    # Vercel Cron Job instead. Only start the in-process loop for a real,
+    # long-running server process.
+    #
+    # Under the Werkzeug debug reloader the parent process re-execs a child
+    # with WERKZEUG_RUN_MAIN=true, so we guard against starting two
+    # scheduler threads ticking against the same DB.
+    on_vercel = os.environ.get('VERCEL') == '1'
+    if start_background_scheduler and not on_vercel and (
+        os.environ.get('WERKZEUG_RUN_MAIN') == 'true' or not app.debug
+    ):
         from scheduler import start_scheduler
         start_scheduler(app)
 

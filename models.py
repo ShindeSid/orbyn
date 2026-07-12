@@ -41,7 +41,7 @@ class Department(db.Model):
     __tablename__ = 'departments'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True, nullable=False)
-    head_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    head_id = db.Column(db.Integer, db.ForeignKey('users.id', name='fk_departments_head_id_users', use_alter=True), nullable=True)
     parent_department_id = db.Column(db.Integer, db.ForeignKey('departments.id'), nullable=True)
     status = db.Column(db.String(20), default='active', nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
