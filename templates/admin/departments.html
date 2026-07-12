@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Org Setup — Departments{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Organization Setup</h1>
+{% include "admin/_tabs.html" %}
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-100 overflow-x-auto">
+    <table class="w-full text-sm min-w-[560px]">
+      <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
+        <tr>
+          <th class="text-left px-4 py-3">Department</th>
+          <th class="text-left px-4 py-3">Head</th>
+          <th class="text-left px-4 py-3">Parent Dept</th>
+          <th class="text-left px-4 py-3">Status</th>
+          <th class="text-left px-4 py-3">Edit</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        {% for dept in departments %}
+        <tr>
+          <td class="px-4 py-3 font-medium">{{ dept.name }}</td>
+          <td class="px-4 py-3 text-gray-600">{{ dept.head.name if dept.head else '—' }}</td>
+          <td class="px-4 py-3 text-gray-600">{{ dept.parent.name if dept.parent else '—' }}</td>
+          <td class="px-4 py-3">
+            <span class="px-2 py-0.5 rounded-full text-xs font-medium {% if dept.status == 'active' %}bg-green-100 text-green-700{% else %}bg-gray-100 text-gray-600{% endif %}">{{ dept.status }}</span>
+          </td>
+          <td class="px-4 py-3">
+            <button type="button" onclick="document.getElementById('edit-dept-{{ dept.id }}').classList.toggle('hidden')" class="text-brand-600 hover:underline text-xs">Edit</button>
+          </td>
+        </tr>
+        <tr id="edit-dept-{{ dept.id }}" class="hidden bg-gray-50">
+          <td colspan="5" class="px-4 py-3">
+            <form method="POST" action="{{ url_for('admin.edit_department', id=dept.id) }}" class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <div>
+                <label class="block text-xs font-medium mb-1">Name</label>
+                <input type="text" name="name" value="{{ dept.name }}" required class="w-full px-2 py-1.5 border border-gray-300 rounded text-sm">
+              </div>
+              <div>
+                <label class="block text-xs font-medium mb-1">Head</label>
+                <select name="head_id" class="w-full px-2 py-1.5 border border-gray-300 rounded text-sm">
+                  <option value="">-- None --</option>
+                  {% for u in dept_heads %}
+                  <option value="{{ u.id }}" {% if dept.head_id == u.id %}selected{% endif %}>{{ u.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-medium mb-1">Parent Dept</label>
+                <select name="parent_department_id" class="w-full px-2 py-1.5 border border-gray-300 rounded text-sm">
+                  <option value="">-- None --</option>
+                  {% for d in departments %}
+                  {% if d.id != dept.id %}
+                  <option value="{{ d.id }}" {% if dept.parent_department_id == d.id %}selected{% endif %}>{{ d.name }}</option>
+                  {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-medium mb-1">Status</label>
+                <select name="status" class="w-full px-2 py-1.5 border border-gray-300 rounded text-sm">
+                  <option value="active" {% if dept.status == 'active' %}selected{% endif %}>Active</option>
+                  <option value="inactive" {% if dept.status == 'inactive' %}selected{% endif %}>Inactive</option>
+                </select>
+              </div>
+              <div class="md:col-span-4">
+                <button type="submit" class="bg-brand-600 text-white px-3 py-1.5 rounded text-xs hover:bg-brand-700">Save</button>
+              </div>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="px-4 py-6 text-center text-gray-400">No departments yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5 h-fit">
+    <h2 class="font-semibold mb-3">Add Department</h2>
+    <form method="POST">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="mb-3">
+        <label class="block text-xs font-medium mb-1">Name *</label>
+        <input type="text" name="name" required maxlength="255" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+      </div>
+      <div class="mb-3">
+        <label class="block text-xs font-medium mb-1">Department Head</label>
+        <select name="head_id" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+          <option value="">-- None --</option>
+          {% for u in dept_heads %}
+          <option value="{{ u.id }}">{{ u.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="block text-xs font-medium mb-1">Parent Department</label>
+        <select name="parent_department_id" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+          <option value="">-- None --</option>
+          {% for d in departments %}
+          <option value="{{ d.id }}">{{ d.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="mb-4">
+        <label class="block text-xs font-medium mb-1">Status</label>
+        <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+      <button type="submit" class="w-full bg-brand-600 text-white py-2 rounded-md hover:bg-brand-700 text-sm font-medium">+ Add Department</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

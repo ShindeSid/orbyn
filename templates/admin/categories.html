@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Org Setup — Categories{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Organization Setup</h1>
+{% include "admin/_tabs.html" %}
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-100 overflow-x-auto">
+    <table class="w-full text-sm min-w-[500px]">
+      <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
+        <tr>
+          <th class="text-left px-4 py-3">Category</th>
+          <th class="text-left px-4 py-3">Description</th>
+          <th class="text-left px-4 py-3">Warranty (days)</th>
+          <th class="text-left px-4 py-3">Edit</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        {% for cat in categories %}
+        <tr>
+          <td class="px-4 py-3 font-medium">{{ cat.name }}</td>
+          <td class="px-4 py-3 text-gray-600">{{ cat.description or '—' }}</td>
+          <td class="px-4 py-3 text-gray-600">{{ cat.warranty_period_days or '—' }}</td>
+          <td class="px-4 py-3">
+            <button type="button" onclick="document.getElementById('edit-cat-{{ cat.id }}').classList.toggle('hidden')" class="text-brand-600 hover:underline text-xs">Edit</button>
+          </td>
+        </tr>
+        <tr id="edit-cat-{{ cat.id }}" class="hidden bg-gray-50">
+          <td colspan="4" class="px-4 py-3">
+            <form method="POST" action="{{ url_for('admin.edit_category', id=cat.id) }}" class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <div>
+                <label class="block text-xs font-medium mb-1">Name</label>
+                <input type="text" name="name" value="{{ cat.name }}" required class="w-full px-2 py-1.5 border border-gray-300 rounded text-sm">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-xs font-medium mb-1">Description</label>
+                <input type="text" name="description" value="{{ cat.description or '' }}" class="w-full px-2 py-1.5 border border-gray-300 rounded text-sm">
+              </div>
+              <div>
+                <label class="block text-xs font-medium mb-1">Warranty (days)</label>
+                <input type="number" min="0" name="warranty_period_days" value="{{ cat.warranty_period_days or '' }}" class="w-full px-2 py-1.5 border border-gray-300 rounded text-sm">
+              </div>
+              <div class="md:col-span-4">
+                <button type="submit" class="bg-brand-600 text-white px-3 py-1.5 rounded text-xs hover:bg-brand-700">Save</button>
+              </div>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" class="px-4 py-6 text-center text-gray-400">No categories yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5 h-fit">
+    <h2 class="font-semibold mb-3">Add Category</h2>
+    <form method="POST">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="mb-3">
+        <label class="block text-xs font-medium mb-1">Name *</label>
+        <input type="text" name="name" required maxlength="255" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" placeholder="e.g. Electronics">
+      </div>
+      <div class="mb-3">
+        <label class="block text-xs font-medium mb-1">Description</label>
+        <input type="text" name="description" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+      </div>
+      <div class="mb-4">
+        <label class="block text-xs font-medium mb-1">Warranty Period (days, optional)</label>
+        <input type="number" min="0" name="warranty_period_days" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" placeholder="e.g. 365">
+      </div>
+      <button type="submit" class="w-full bg-brand-600 text-white py-2 rounded-md hover:bg-brand-700 text-sm font-medium">+ Add Category</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
