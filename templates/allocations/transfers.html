@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {% extends "base.html" %}
 {% from "_status_badge.html" import status_badge %}
 {% block title %}Pending Transfers — Orbyn{% endblock %}
@@ -44,3 +45,51 @@
   </table>
 </div>
 {% endblock %}
+=======
+{% extends "base.html" %}
+{% from "_status_badge.html" import status_badge %}
+{% block title %}Pending Transfers — Orbyn{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-6">Pending Transfer Requests</h1>
+
+<div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-x-auto">
+  <table class="w-full text-sm min-w-[720px]">
+    <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
+      <tr>
+        <th class="text-left px-4 py-3">Asset</th>
+        <th class="text-left px-4 py-3">Current Holder</th>
+        <th class="text-left px-4 py-3">Requested By</th>
+        <th class="text-left px-4 py-3">Transfer To</th>
+        <th class="text-left px-4 py-3">Decision</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      {% for a in pending %}
+      <tr>
+        <td class="px-4 py-3"><a href="{{ url_for('assets.detail', id=a.asset_id) }}" class="text-brand-600 hover:underline font-mono">{{ a.asset.tag }}</a></td>
+        <td class="px-4 py-3">{{ a.holder_name }}</td>
+        <td class="px-4 py-3">{{ a.requested_by.name if a.requested_by else '—' }}</td>
+        <td class="px-4 py-3">{{ a.transfer_to_user.name if a.transfer_to_user else '—' }}</td>
+        <td class="px-4 py-3">
+          <div class="flex gap-2">
+            <form method="POST" action="{{ url_for('allocations.transfer_approve', id=a.id) }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="decision" value="approve">
+              <button type="submit" class="bg-green-600 text-white px-3 py-1.5 rounded text-xs hover:bg-green-700">Approve</button>
+            </form>
+            <form method="POST" action="{{ url_for('allocations.transfer_approve', id=a.id) }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="decision" value="reject">
+              <button type="submit" class="bg-red-600 text-white px-3 py-1.5 rounded text-xs hover:bg-red-700">Reject</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="px-4 py-8 text-center text-gray-400">No pending transfer requests.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+>>>>>>> 9e1780c50f87b9da09c04f3b9931430679c61983
