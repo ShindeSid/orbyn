@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% from "_status_badge.html" import status_badge %}
+{% block title %}Asset Audit — Orbyn{% endblock %}
+{% block content %}
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
+  <h1 class="text-2xl font-bold">Asset Audit Cycles</h1>
+  <a href="{{ url_for('audit.create') }}" class="bg-brand-600 text-white px-4 py-2 rounded-md hover:bg-brand-700 text-sm font-medium text-center">+ New Audit Cycle</a>
+</div>
+
+<div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-x-auto">
+  <table class="w-full text-sm min-w-[700px]">
+    <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
+      <tr>
+        <th class="text-left px-4 py-3">Cycle</th>
+        <th class="text-left px-4 py-3">Scope</th>
+        <th class="text-left px-4 py-3">Date Range</th>
+        <th class="text-left px-4 py-3">Discrepancies</th>
+        <th class="text-left px-4 py-3">Status</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      {% for c in cycles %}
+      <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='{{ url_for('audit.detail', id=c.id) }}'">
+        <td class="px-4 py-3 font-medium">{{ c.name }}</td>
+        <td class="px-4 py-3 text-gray-600">{{ c.scope_department.name if c.scope_department else '' }}{% if c.scope_department and c.scope_location %} · {% endif %}{{ c.scope_location or '' }}</td>
+        <td class="px-4 py-3 text-gray-600">{{ c.start_date.strftime('%Y-%m-%d') }} → {{ c.end_date.strftime('%Y-%m-%d') }}</td>
+        <td class="px-4 py-3">{% if c.discrepancy_count %}<span class="text-red-600 font-medium">{{ c.discrepancy_count }}</span>{% else %}—{% endif %}</td>
+        <td class="px-4 py-3">{{ status_badge(c.status) }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="px-4 py-8 text-center text-gray-400">No audit cycles yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

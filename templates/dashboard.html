@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Orbyn{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-1">Dashboard</h1>
+<p class="text-sm text-gray-500 mb-6">Welcome back, {{ current_user.name }}.</p>
+
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
+  <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+    <p class="text-gray-500 text-xs font-medium">Available</p>
+    <p class="text-3xl font-bold text-green-600">{{ available }}</p>
+  </div>
+  <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+    <p class="text-gray-500 text-xs font-medium">Allocated</p>
+    <p class="text-3xl font-bold text-blue-600">{{ allocated }}</p>
+  </div>
+  <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+    <p class="text-gray-500 text-xs font-medium">Maintenance Today</p>
+    <p class="text-3xl font-bold text-amber-600">{{ maintenance_today }}</p>
+  </div>
+  <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+    <p class="text-gray-500 text-xs font-medium">Active Bookings</p>
+    <p class="text-3xl font-bold text-purple-600">{{ active_bookings }}</p>
+  </div>
+  <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+    <p class="text-gray-500 text-xs font-medium">Pending Transfers</p>
+    <p class="text-3xl font-bold text-indigo-600">{{ pending_transfers }}</p>
+  </div>
+  <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+    <p class="text-gray-500 text-xs font-medium">Upcoming Returns</p>
+    <p class="text-3xl font-bold text-gray-700">{{ upcoming_returns|length }}</p>
+  </div>
+</div>
+
+{% if overdue_allocations %}
+<div class="bg-red-50 border border-red-200 rounded-lg p-5 mb-8">
+  <h2 class="text-base font-bold text-red-700 mb-3">⚠ Overdue Returns ({{ overdue_count }})</h2>
+  <div class="overflow-x-auto">
+  <table class="w-full text-sm">
+    <thead class="text-red-700 text-xs uppercase">
+      <tr><th class="text-left py-1">Asset</th><th class="text-left py-1">Holder</th><th class="text-left py-1">Expected Return</th><th class="text-left py-1">Days Overdue</th></tr>
+    </thead>
+    <tbody class="divide-y divide-red-100">
+      {% for a in overdue_allocations %}
+      <tr>
+        <td class="py-2"><a href="{{ url_for('assets.detail', id=a.asset_id) }}" class="text-brand-700 hover:underline font-mono">{{ a.asset.tag }}</a></td>
+        <td class="py-2">{{ a.holder_name }}</td>
+        <td class="py-2">{{ a.expected_return_date.strftime('%Y-%m-%d') }}</td>
+        <td class="py-2 font-medium">{{ (today - a.expected_return_date).days }} days</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+{% endif %}
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+  <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+    <h2 class="text-sm font-semibold text-gray-500 uppercase mb-3">Upcoming Returns (7 days)</h2>
+    {% if upcoming_returns %}
+    <ul class="text-sm divide-y divide-gray-100">
+      {% for a in upcoming_returns %}
+      <li class="py-2 flex justify-between"><a href="{{ url_for('assets.detail', id=a.asset_id) }}" class="text-brand-600 hover:underline font-mono">{{ a.asset.tag }}</a> <span class="text-gray-500">{{ a.holder_name }} · {{ a.expected_return_date.strftime('%Y-%m-%d') }}</span></li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-sm text-gray-400">Nothing due soon.</p>
+    {% endif %}
+  </div>
+
+  <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+    <h2 class="text-sm font-semibold text-gray-500 uppercase mb-3">Upcoming Bookings</h2>
+    {% if upcoming_bookings %}
+    <ul class="text-sm divide-y divide-gray-100">
+      {% for b in upcoming_bookings %}
+      <li class="py-2 flex justify-between"><span>{{ b.asset.name }}</span> <span class="text-gray-500">{{ b.start_time.strftime('%Y-%m-%d %H:%M') }}</span></li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-sm text-gray-400">No upcoming bookings.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+  {% if current_user.role in ['admin', 'asset_manager'] %}
+  <a href="{{ url_for('assets.register') }}" class="bg-brand-600 text-white p-4 rounded-lg hover:bg-brand-700 text-center font-medium">➕ Register Asset</a>
+  {% endif %}
+  <a href="{{ url_for('bookings.create') }}" class="bg-purple-600 text-white p-4 rounded-lg hover:bg-purple-700 text-center font-medium">📅 Book Resource</a>
+  <a href="{{ url_for('maintenance.create') }}" class="bg-amber-600 text-white p-4 rounded-lg hover:bg-amber-700 text-center font-medium">🔧 Raise Maintenance</a>
+</div>
+{% endblock %}

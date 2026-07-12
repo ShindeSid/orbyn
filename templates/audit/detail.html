@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% from "_status_badge.html" import status_badge %}
+{% block title %}{{ cycle.name }} — Orbyn{% endblock %}
+{% block content %}
+<div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
+  <div>
+    <div class="flex items-center gap-3">
+      <h1 class="text-2xl font-bold">{{ cycle.name }}</h1>
+      {{ status_badge(cycle.status) }}
+    </div>
+    <p class="text-sm text-gray-500 mt-1">
+      {{ cycle.start_date.strftime('%Y-%m-%d') }} → {{ cycle.end_date.strftime('%Y-%m-%d') }} ·
+      Auditors: {{ cycle.auditors|map(attribute='name')|join(', ') }}
+    </p>
+  </div>
+  {% if cycle.status == 'open' and current_user.role in ['admin', 'asset_manager'] %}
+  <form method="POST" action="{{ url_for('audit.close_cycle', id=cycle.id) }}" onsubmit="return confirm('Close this audit cycle? This locks it and updates asset statuses for confirmed-missing items.');">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="bg-gray-800 text-white px-4 py-2 rounded-md text-sm hover:bg-gray-900">Close Audit Cycle</button>
+  </form>
+  {% endif %}
+</div>
+
+{% if cycle.discrepancy_count %}
+<div class="bg-amber-50 border border-amber-200 text-amber-800 rounded-lg p-4 mb-6 text-sm">
+  {{ cycle.discrepancy_count }} asset(s) flagged — discrepancy report auto-generated below.
+</div>
+{% endif %}
+
+<div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-x-auto">
+  <table class="w-full text-sm min-w-[720px]">
+    <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
+      <tr>
+        <th class="text-left px-4 py-3">Asset</th>
+        <th class="text-left px-4 py-3">Expected Location</th>
+        <th class="text-left px-4 py-3">Notes</th>
+        <th class="text-left px-4 py-3">Verification</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      {% for item in cycle.items %}
+      <tr>
+        <td class="px-4 py-3"><a href="{{ url_for('assets.detail', id=item.asset_id) }}" class="text-brand-600 hover:underline font-mono">{{ item.asset.tag }}</a> <span class="text-gray-500">{{ item.asset.name }}</span></td>
+        <td class="px-4 py-3 text-gray-600">{{ item.expected_location or '—' }}</td>
+        <td class="px-4 py-3 text-gray-600">{{ item.notes or '—' }}</td>
+        <td class="px-4 py-3">
+          {% if can_verify %}
+          <form method="POST" action="{{ url_for('audit.verify_item', cycle_id=cycle.id, item_id=item.id) }}" class="flex flex-wrap items-center gap-2">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <select name="verification_status" required class="border border-gray-300 rounded text-xs px-2 py-1">
+              <option value="" disabled {% if item.verification_status == 'pending' %}selected{% endif %}>-- Mark --</option>
+              <option value="verified" {% if item.verification_status == 'verified' %}selected{% endif %}>Verified</option>
+              <option value="missing" {% if item.verification_status == 'missing' %}selected{% endif %}>Missing</option>
+              <option value="damaged" {% if item.verification_status == 'damaged' %}selected{% endif %}>Damaged</option>
+            </select>
+            <input type="text" name="notes" value="{{ item.notes or '' }}" placeholder="notes" class="border border-gray-300 rounded text-xs px-2 py-1 w-28">
+            <button type="submit" class="bg-brand-600 text-white px-2 py-1 rounded text-xs hover:bg-brand-700">Save</button>
+          </form>
+          {% else %}
+          {{ status_badge(item.verification_status) }}
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" class="px-4 py-8 text-center text-gray-400">No assets in scope.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
