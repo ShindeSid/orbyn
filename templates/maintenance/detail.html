@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% from "_status_badge.html" import status_badge %}
+{% block title %}Maintenance Request — Orbyn{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto">
+  <div class="flex items-center gap-3 mb-6">
+    <h1 class="text-2xl font-bold">Maintenance Request #{{ req.id }}</h1>
+    {{ status_badge(req.status) }}
+  </div>
+
+  <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+    <dl class="text-sm space-y-3">
+      <div class="flex justify-between"><dt class="text-gray-500">Asset</dt><dd><a href="{{ url_for('assets.detail', id=req.asset.id) }}" class="text-brand-600 hover:underline">{{ req.asset.tag }} — {{ req.asset.name }}</a></dd></div>
+      <div class="flex justify-between"><dt class="text-gray-500">Raised By</dt><dd>{{ req.raised_by.name }}</dd></div>
+      <div class="flex justify-between"><dt class="text-gray-500">Priority</dt><dd class="capitalize">{{ req.priority }}</dd></div>
+      <div><dt class="text-gray-500 mb-1">Description</dt><dd class="text-gray-800">{{ req.description }}</dd></div>
+      {% if req.technician_name %}
+      <div class="flex justify-between"><dt class="text-gray-500">Technician</dt><dd>{{ req.technician_name }}</dd></div>
+      {% endif %}
+      {% if req.rejection_reason %}
+      <div><dt class="text-gray-500 mb-1">Rejection Reason</dt><dd class="text-red-700">{{ req.rejection_reason }}</dd></div>
+      {% endif %}
+      <div class="flex justify-between"><dt class="text-gray-500">Raised On</dt><dd>{{ req.created_at.strftime('%Y-%m-%d %H:%M') }}</dd></div>
+      {% if req.resolved_at %}
+      <div class="flex justify-between"><dt class="text-gray-500">Resolved On</dt><dd>{{ req.resolved_at.strftime('%Y-%m-%d %H:%M') }}</dd></div>
+      {% endif %}
+    </dl>
+  </div>
+
+  {% if current_user.role in ['admin', 'asset_manager'] %}
+  <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+    <h2 class="font-semibold mb-4 text-sm text-gray-500 uppercase">Actions</h2>
+
+    {% if req.status == 'pending' %}
+    <div class="flex flex-col md:flex-row gap-3">
+      <form method="POST" action="{{ url_for('maintenance.decide', id=req.id) }}" class="flex-1">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="decision" value="approve">
+        <button type="submit" class="w-full bg-green-600 text-white px-4 py-2 rounded-md text-sm hover:bg-green-700">Approve</button>
+      </form>
+      <form method="POST" action="{{ url_for('maintenance.decide', id=req.id) }}" class="flex-1 flex gap-2">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="decision" value="reject">
+        <input type="text" name="reason" placeholder="Rejection reason (optional)" class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm">
+        <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-md text-sm hover:bg-red-700 whitespace-nowrap">Reject</button>
+      </form>
+    </div>
+    {% elif req.status == 'approved' %}
+    <form method="POST" action="{{ url_for('maintenance.assign', id=req.id) }}" class="flex flex-col md:flex-row gap-3">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="text" name="technician_name" required placeholder="Technician name" class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm">
+      <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm hover:bg-indigo-700">Assign Technician</button>
+    </form>
+    {% elif req.status == 'assigned' %}
+    <form method="POST" action="{{ url_for('maintenance.start', id=req.id) }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded-md text-sm hover:bg-purple-700">Mark In Progress</button>
+    </form>
+    {% elif req.status == 'in_progress' %}
+    <form method="POST" action="{{ url_for('maintenance.resolve', id=req.id) }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm hover:bg-green-700">Mark Resolved</button>
+    </form>
+    {% else %}
+    <p class="text-sm text-gray-400">No further actions.</p>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
