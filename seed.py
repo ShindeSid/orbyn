@@ -1,14 +1,64 @@
-"""Seed Orbyn with realistic demo data. Run with: python seed.py"""
-from datetime import date, datetime, timedelta
+"""
+Seed Orbyn with a larger fake dataset: 5 enterprises, 20 employees each
+(100 users total), 15 assets each (75 assets total, mostly electronics).
+
+Orbyn's data model is single-tenant (no separate "Enterprise"/"Company"
+table) — each "enterprise" here is a top-level Department, since that's
+the existing org-unit concept the app already has. Run with:
+
+    python seed.py
+"""
+import random
+from datetime import date, timedelta
 
 from app import create_app
 from extensions import db
-from models import (
-    Department, AssetCategory, User, Asset, Allocation, Booking,
-    MaintenanceRequest, AuditCycle, AuditItem, Notification,
-)
+from models import Department, AssetCategory, User, Asset
 
 app = create_app(start_background_scheduler=False)
+
+PASSWORD = 'Password123!'
+
+ENTERPRISES = [
+    ('Acme Manufacturing', 'acmemfg.com'),
+    ('Globex Technologies', 'globextech.com'),
+    ('Initech Solutions', 'initech.com'),
+    ('Umbrella Logistics', 'umbrellalog.com'),
+    ('Stark Industries East', 'starkeast.com'),
+]
+
+FIRST_NAMES = [
+    'Aarav', 'Vivaan', 'Aditya', 'Vihaan', 'Arjun', 'Sai', 'Reyansh', 'Krishna',
+    'Ishaan', 'Rohan', 'Kabir', 'Aryan', 'Dhruv', 'Rudra', 'Ayaan', 'Yash',
+    'Ananya', 'Diya', 'Saanvi', 'Aadhya', 'Kiara', 'Myra', 'Anika', 'Navya',
+    'Ira', 'Riya', 'Meera', 'Tara', 'Zara', 'Naina',
+]
+LAST_NAMES = [
+    'Sharma', 'Verma', 'Gupta', 'Kapoor', 'Malhotra', 'Nair', 'Iyer', 'Rao',
+    'Reddy', 'Mehta', 'Shah', 'Bose', 'Chatterjee', 'Banerjee', 'Mukherjee',
+    'Iqbal', 'Khan', 'Joshi', 'Desai', 'Patel', 'Singh', 'Kaur', 'Dutta',
+    'Sen', 'Menon', 'Pillai', 'Krishnan', 'Bhatt', 'Chawla', 'Ahluwalia',
+]
+
+# (name, category_key, cost_range, is_shared, weight)
+ASSET_TYPES = [
+    ('Laptop', 'electronics', (40000, 90000), False, 5),
+    ('Desktop PC', 'electronics', (35000, 70000), False, 4),
+    ('Tablet', 'electronics', (15000, 40000), False, 3),
+    ('Monitor', 'electronics', (8000, 20000), False, 3),
+    ('Smartphone', 'electronics', (15000, 60000), False, 2),
+    ('Printer', 'electronics', (8000, 25000), True, 2),
+    ('Projector', 'electronics', (20000, 60000), True, 1),
+    ('Scanner', 'electronics', (5000, 15000), True, 1),
+    ('External Hard Drive', 'electronics', (3000, 8000), False, 1),
+    ('Webcam', 'electronics', (2000, 6000), False, 1),
+    ('Network Switch', 'electronics', (10000, 30000), True, 1),
+    ('Server', 'electronics', (150000, 400000), True, 1),
+    ('Conference Phone', 'electronics', (15000, 40000), True, 1),
+    ('Office Chair', 'furniture', (5000, 15000), False, 1),
+    ('Standing Desk', 'furniture', (15000, 30000), False, 1),
+]
+ASSET_POOL = [t for t in ASSET_TYPES for _ in range(t[4])]
 
 
 def run():
@@ -16,174 +66,94 @@ def run():
         db.drop_all()
         db.create_all()
 
-        # --- Departments ---
-        engineering = Department(name='Engineering', status='active')
-        facilities = Department(name='Facilities', status='active')
-        field_ops = Department(name='Field Ops (east)', status='inactive')
-        sales = Department(name='Sales', status='active')
-        db.session.add_all([engineering, facilities, field_ops, sales])
+        electronics = AssetCategory(name='Electronics', description='Laptops, PCs, tablets, printers, and other electronics', warranty_period_days=730)
+        furniture = AssetCategory(name='Furniture', description='Chairs, desks, and other furniture')
+        db.session.add_all([electronics, furniture])
         db.session.flush()
+        categories = {'electronics': electronics, 'furniture': furniture}
 
-        # --- Categories ---
-        electronics = AssetCategory(name='Electronics', description='Laptops, monitors, projectors', warranty_period_days=730)
-        furniture = AssetCategory(name='Furniture', description='Chairs, desks, cabinets')
-        vehicles = AssetCategory(name='Vehicles', description='Vans, forklifts', warranty_period_days=365)
-        db.session.add_all([electronics, furniture, vehicles])
-        db.session.flush()
+        used_emails = set()
 
-        # --- Users ---
-        def make_user(name, email, role, department=None, status='active'):
-            u = User(name=name, email=email, role=role, status=status,
-                      department_id=department.id if department else None)
-            u.set_password('Password123!')
-            db.session.add(u)
-            return u
+        def unique_email(first, last, domain):
+            base = f'{first.lower()}.{last.lower()}'
+            email = f'{base}@{domain}'
+            n = 2
+            while email in used_emails:
+                email = f'{base}{n}@{domain}'
+                n += 1
+            used_emails.add(email)
+            return email
 
-        admin = make_user('Admin User', 'admin@orbyn.app', 'admin')
-        asset_mgr = make_user('Karan Bose', 'karan.bose@orbyn.app', 'asset_manager')
-        dept_head_eng = make_user('Aditi Rao', 'aditi.rao@orbyn.app', 'dept_head', engineering)
-        dept_head_facilities = make_user('Rohan Mehta', 'rohan.mehta@orbyn.app', 'dept_head', facilities)
-        dept_head_field_ops = make_user('Sana Iqbal', 'sana.iqbal@orbyn.app', 'dept_head', field_ops)
-        priya = make_user('Priya Shah', 'priya.shah@orbyn.app', 'employee', engineering)
-        raj = make_user('Raj Kapoor', 'raj.kapoor@orbyn.app', 'employee', engineering)
-        arjun = make_user('Arjun Nair', 'arjun.nair@orbyn.app', 'employee', facilities)
-        neha = make_user('Neha Verma', 'neha.verma@orbyn.app', 'employee', sales)
-        db.session.flush()
+        name_pairs = [(f, l) for f in FIRST_NAMES for l in LAST_NAMES]
+        random.shuffle(name_pairs)
+        name_iter = iter(name_pairs)
 
-        engineering.head_id = dept_head_eng.id
-        facilities.head_id = dept_head_facilities.id
-        field_ops.head_id = dept_head_field_ops.id
+        tag_counter = 1
 
-        # --- Assets ---
-        def make_asset(tag, name, category, location, status='available', is_shared=False,
-                        serial=None, condition='good', acquired_days_ago=200, cost=None):
-            a = Asset(
-                tag=tag, name=name, category_id=category.id, location=location,
-                status=status, is_shared=is_shared, serial_number=serial, condition=condition,
-                acquisition_date=date.today() - timedelta(days=acquired_days_ago),
-                acquisition_cost=cost,
-            )
-            db.session.add(a)
-            return a
+        def next_tag():
+            nonlocal tag_counter
+            tag = f'AF-{tag_counter:04d}'
+            tag_counter += 1
+            return tag
 
-        laptop_114 = make_asset('AF-0114', 'Dell Laptop', electronics, 'Bengaluru HQ, Floor 2', status='allocated', serial='DL-99231', acquired_days_ago=400, cost=85000)
-        laptop_003 = make_asset('AF-0003', 'Dell Laptop', electronics, 'Bengaluru HQ, Floor 3', status='available', serial='DL-88120', acquired_days_ago=1600, cost=72000)
-        projector = make_asset('AF-0062', 'Projector', electronics, 'HQ Floor 2', status='under_maintenance', is_shared=True, acquired_days_ago=900, cost=45000)
-        chair_201 = make_asset('AF-0201', 'Office Chair', furniture, 'Warehouse', status='available', acquired_days_ago=100, cost=6000)
-        chair_9921 = make_asset('AF-9921', 'Office Chair', furniture, 'Desk E14', status='lost', acquired_days_ago=500, cost=5500)
-        monitor = make_asset('AF-9838', 'Monitor', electronics, 'Desk E15', status='available', condition='poor', acquired_days_ago=1500, cost=15000)
-        room_b2 = make_asset('AF-B002', 'Conference Room B2', furniture, 'HQ Floor 2', status='available', is_shared=True, acquired_days_ago=1000)
-        van_393 = make_asset('AF-0393', 'Delivery Van', vehicles, 'Field Depot', status='available', is_shared=True, acquired_days_ago=300, cost=1200000)
-        forklift = make_asset('AF-0087', 'Forklift', vehicles, 'Warehouse', status='available', acquired_days_ago=1450, cost=900000)
-        camera = make_asset('AF-0301', 'Camera', electronics, 'Storage Room', status='available', acquired_days_ago=700, cost=55000)
-        db.session.flush()
+        departments = []
+        all_users = []
+        admin_assigned = False
 
-        # --- Allocations ---
-        alloc_priya = Allocation(
-            asset_id=laptop_114.id, user_id=priya.id, status='active',
-            allocated_date=date.today() - timedelta(days=60),
-            expected_return_date=date.today() + timedelta(days=30),
-        )
-        alloc_arjun_overdue = Allocation(
-            asset_id=chair_201.id, user_id=arjun.id, status='returned',
-            allocated_date=date.today() - timedelta(days=200),
-            expected_return_date=date.today() - timedelta(days=100),
-            actual_return_date=date.today() - timedelta(days=90),
-        )
-        # a currently overdue active allocation, to populate the dashboard alert
-        chair_201.status = 'allocated'
-        alloc_overdue_active = Allocation(
-            asset_id=chair_201.id, user_id=neha.id, status='active',
-            allocated_date=date.today() - timedelta(days=40),
-            expected_return_date=date.today() - timedelta(days=3),
-        )
-        db.session.add_all([alloc_priya, alloc_arjun_overdue, alloc_overdue_active])
-        db.session.flush()
+        for enterprise_name, domain in ENTERPRISES:
+            dept = Department(name=enterprise_name, status='active')
+            db.session.add(dept)
+            db.session.flush()
+            departments.append(dept)
 
-        # --- Bookings ---
-        today_9am = datetime.now().replace(hour=9, minute=0, second=0, microsecond=0)
-        booking1 = Booking(
-            asset_id=room_b2.id, user_id=raj.id,
-            start_time=today_9am, end_time=today_9am + timedelta(hours=1),
-            status='upcoming', purpose='Procurement sync',
-        )
-        van_start = (datetime.now() + timedelta(days=1)).replace(minute=0, second=0, microsecond=0) + timedelta(hours=2)
-        booking2 = Booking(
-            asset_id=van_393.id, user_id=arjun.id,
-            start_time=van_start, end_time=van_start + timedelta(hours=3),
-            status='upcoming', purpose='Site delivery',
-        )
-        db.session.add_all([booking1, booking2])
-        db.session.flush()
+            # 20 people per enterprise: 1 dept head, 2 asset managers, rest employees
+            roles = ['dept_head'] + ['asset_manager'] * 2 + ['employee'] * 17
+            if not admin_assigned:
+                roles[3] = 'admin'  # one global admin, carved out of the first enterprise
+                admin_assigned = True
 
-        # --- Maintenance requests (populate every kanban column) ---
-        m_pending = MaintenanceRequest(
-            asset_id=monitor.id, raised_by_id=priya.id,
-            description='Monitor flickers intermittently, especially on startup.',
-            priority='medium', status='pending',
-        )
-        m_approved = MaintenanceRequest(
-            asset_id=projector.id, raised_by_id=raj.id,
-            description='Projector bulb not turning on.',
-            priority='high', status='approved', approved_by_id=asset_mgr.id,
-        )
-        m_assigned = MaintenanceRequest(
-            asset_id=forklift.id, raised_by_id=arjun.id,
-            description='AC unit making a loud noise, needs inspection.',
-            priority='medium', status='assigned', approved_by_id=asset_mgr.id,
-            technician_name='Tech R. Varma',
-        )
-        m_in_progress = MaintenanceRequest(
-            asset_id=van_393.id, raised_by_id=neha.id,
-            description='Forklift hydraulics leaking fluid.',
-            priority='critical', status='in_progress', approved_by_id=asset_mgr.id,
-            technician_name='Tech S. Nair',
-        )
-        m_resolved = MaintenanceRequest(
-            asset_id=chair_9921.id, raised_by_id=priya.id,
-            description='Chair repair — wheel replacement.',
-            priority='low', status='resolved', approved_by_id=asset_mgr.id,
-            technician_name='Tech A. Joshi', resolved_at=datetime.utcnow() - timedelta(days=5),
-        )
-        db.session.add_all([m_pending, m_approved, m_assigned, m_in_progress, m_resolved])
-        db.session.flush()
+            dept_users = []
+            for role in roles:
+                first, last = next(name_iter)
+                u = User(
+                    name=f'{first} {last}', email=unique_email(first, last, domain),
+                    role=role, department_id=dept.id, status='active',
+                )
+                u.set_password(PASSWORD)
+                db.session.add(u)
+                dept_users.append(u)
+            db.session.flush()
 
-        # --- Audit cycle ---
-        cycle = AuditCycle(
-            name='Q3 audit: Engineering dept', scope_department_id=engineering.id,
-            start_date=date.today() - timedelta(days=5), end_date=date.today() + timedelta(days=5),
-            status='open', created_by_id=admin.id,
-        )
-        cycle.auditors = [asset_mgr, dept_head_eng]
-        db.session.add(cycle)
-        db.session.flush()
+            dept.head_id = next(u for u in dept_users if u.role == 'dept_head').id
+            all_users.extend(dept_users)
 
-        db.session.add_all([
-            AuditItem(audit_cycle_id=cycle.id, asset_id=laptop_003.id, expected_location='Desk E12', verification_status='verified', verified_by_id=asset_mgr.id, verified_at=datetime.utcnow()),
-            AuditItem(audit_cycle_id=cycle.id, asset_id=chair_9921.id, expected_location='Desk E14', verification_status='missing', verified_by_id=asset_mgr.id, verified_at=datetime.utcnow(), notes='Not found at desk'),
-            AuditItem(audit_cycle_id=cycle.id, asset_id=monitor.id, expected_location='Desk E15', verification_status='damaged', verified_by_id=asset_mgr.id, verified_at=datetime.utcnow(), notes='Cracked bezel'),
-            AuditItem(audit_cycle_id=cycle.id, asset_id=laptop_114.id, expected_location='Floor 2', verification_status='pending'),
-        ])
-
-        # --- A few notifications so the bell/activity feed isn't empty ---
-        db.session.add_all([
-            Notification(user_id=priya.id, message=f'Asset {laptop_114.tag} assigned to you', type='asset_assigned', related_entity_type='asset', related_entity_id=laptop_114.id),
-            Notification(user_id=asset_mgr.id, message='Maintenance request AF-0055 approved', type='maintenance_approved'),
-            Notification(user_id=raj.id, message='Booking confirmed: Room B2, 09:00–10:00', type='booking_confirmed', related_entity_type='booking', related_entity_id=booking1.id),
-            Notification(user_id=asset_mgr.id, message='Audit discrepancy flagged: AF-9921 missing', type='audit_discrepancy', related_entity_type='audit_cycle', related_entity_id=cycle.id),
-        ])
+            # 15 assets per enterprise, weighted toward electronics
+            for _ in range(15):
+                a_name, cat_key, cost_range, shared, _weight = random.choice(ASSET_POOL)
+                days_ago = random.randint(30, 1500)
+                condition = random.choices(['good', 'fair', 'poor'], weights=[70, 22, 8])[0]
+                asset = Asset(
+                    tag=next_tag(), name=a_name, category_id=categories[cat_key].id,
+                    serial_number=f'{"".join(w[0] for w in a_name.split())}-{random.randint(10000, 99999)}',
+                    acquisition_date=date.today() - timedelta(days=days_ago),
+                    acquisition_cost=random.randint(*cost_range),
+                    condition=condition,
+                    location=f'{enterprise_name} HQ, Floor {random.randint(1, 5)}',
+                    is_shared=shared, status='available',
+                )
+                db.session.add(asset)
 
         db.session.commit()
 
-        print('\nSeed complete. Demo logins (password: Password123!):\n')
-        print(f'  Admin           {admin.email}')
-        print(f'  Asset Manager   {asset_mgr.email}')
-        print(f'  Dept Head       {dept_head_eng.email}')
-        print(f'  Dept Head       {dept_head_facilities.email}')
-        print(f'  Employee        {priya.email}')
-        print(f'  Employee        {raj.email}')
-        print(f'  Employee        {arjun.email}')
-        print(f'  Employee        {neha.email}\n')
+        total_assets = len(ENTERPRISES) * 15
+        print(f'\nSeed complete: {len(departments)} enterprises, {len(all_users)} employees, {total_assets} assets.')
+        print(f'All logins use password: {PASSWORD}\n')
+        for dept in departments:
+            dept_users = [u for u in all_users if u.department_id == dept.id]
+            print(f'--- {dept.name} ({len(dept_users)} people) ---')
+            for u in dept_users:
+                print(f'  {u.role:15s} {u.email}')
+            print()
 
 
 if __name__ == '__main__':
