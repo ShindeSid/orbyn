@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% from "_status_badge.html" import status_badge %}
+{% block title %}{{ asset.tag }} — Orbyn{% endblock %}
+{% block content %}
+<div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
+  <div>
+    <div class="flex items-center gap-3">
+      <h1 class="text-2xl font-bold">{{ asset.tag }} — {{ asset.name }}</h1>
+      {{ status_badge(asset.status) }}
+    </div>
+    <p class="text-sm text-gray-500 mt-1">{{ asset.category.name }} · {{ asset.location }}</p>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    {% if asset.status == 'available' and current_user.role in ['admin', 'asset_manager', 'dept_head'] %}
+    <a href="{{ url_for('allocations.create', asset_id=asset.id) }}" class="bg-brand-600 text-white px-3 py-2 rounded-md text-sm hover:bg-brand-700">Allocate</a>
+    {% endif %}
+    {% set holder_allocation = asset.current_allocation %}
+    {% if holder_allocation and (holder_allocation.user_id == current_user.id or current_user.role in ['admin', 'asset_manager', 'dept_head']) %}
+    <a href="{{ url_for('allocations.return_asset', id=holder_allocation.id) }}" class="bg-green-600 text-white px-3 py-2 rounded-md text-sm hover:bg-green-700">Return</a>
+    <button type="button" onclick="document.getElementById('transfer-form').classList.toggle('hidden')" class="bg-indigo-600 text-white px-3 py-2 rounded-md text-sm hover:bg-indigo-700">Request Transfer</button>
+    {% endif %}
+    {% if asset.is_shared %}
+    <a href="{{ url_for('bookings.create', asset_id=asset.id) }}" class="bg-purple-600 text-white px-3 py-2 rounded-md text-sm hover:bg-purple-700">Book</a>
+    {% endif %}
+    {% if asset.status not in ['under_maintenance', 'retired', 'disposed'] %}
+    <a href="{{ url_for('maintenance.create', asset_id=asset.id) }}" class="bg-amber-600 text-white px-3 py-2 rounded-md text-sm hover:bg-amber-700">Raise Maintenance</a>
+    {% endif %}
+    {% if current_user.role in ['admin', 'asset_manager'] and asset.status not in ['retired', 'disposed'] %}
+    <form method="POST" action="{{ url_for('assets.retire', id=asset.id) }}" onsubmit="return confirm('Retire this asset? This cannot be easily undone.');">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="bg-gray-700 text-white px-3 py-2 rounded-md text-sm hover:bg-gray-800">Retire</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+{% if holder_allocation %}
+<div id="transfer-form" class="hidden bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-6">
+  <form method="POST" action="{{ url_for('allocations.transfer_request', id=holder_allocation.id) }}" class="flex flex-col md:flex-row md:items-end gap-3">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="flex-1">
+      <label class="block text-sm font-medium mb-1">Transfer {{ asset.tag }} to</label>
+      <select name="new_user_id" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
+        <option value="">-- Select employee --</option>
+        {% for u in users %}
+        {% if u.id != holder_allocation.user_id %}
+        <option value="{{ u.id }}">{{ u.name }} ({{ u.email }})</option>
+        {% endif %}
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm hover:bg-indigo-700">Submit Request</button>
+  </form>
+</div>
+{% endif %}
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+    <h2 class="font-semibold mb-3 text-sm text-gray-500 uppercase">Details</h2>
+    <dl class="text-sm space-y-2">
+      <div class="flex justify-between"><dt class="text-gray-500">Serial Number</dt><dd>{{ asset.serial_number or '—' }}</dd></div>
+      <div class="flex justify-between"><dt class="text-gray-500">Condition</dt><dd class="capitalize">{{ asset.condition }}</dd></div>
+      <div class="flex justify-between"><dt class="text-gray-500">Acquisition Date</dt><dd>{{ asset.acquisition_date.strftime('%Y-%m-%d') if asset.acquisition_date else '—' }}</dd></div>
+      <div class="flex justify-between"><dt class="text-gray-500">Acquisition Cost</dt><dd>{{ '%.2f'|format(asset.acquisition_cost) if asset.acquisition_cost else '—' }}</dd></div>
+      <div class="flex justify-between"><dt class="text-gray-500">Shared / Bookable</dt><dd>{{ 'Yes' if asset.is_shared else 'No' }}</dd></div>
+      <div class="flex justify-between"><dt class="text-gray-500">Current Holder</dt><dd>{{ asset.current_allocation.holder_name if asset.current_allocation else '—' }}</dd></div>
+    </dl>
+  </div>
+
+  <div class="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+    <h2 class="font-semibold mb-3 text-sm text-gray-500 uppercase">Allocation History</h2>
+    {% if asset.allocations %}
+    <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="text-gray-500 text-xs uppercase">
+        <tr><th class="text-left py-2">Holder</th><th class="text-left py-2">Allocated</th><th class="text-left py-2">Expected Return</th><th class="text-left py-2">Status</th></tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        {% for a in asset.allocations %}
+        <tr>
+          <td class="py-2">{{ a.holder_name }}</td>
+          <td class="py-2">{{ a.allocated_date.strftime('%Y-%m-%d') if a.allocated_date else '—' }}</td>
+          <td class="py-2">{{ a.expected_return_date.strftime('%Y-%m-%d') if a.expected_return_date else '—' }}</td>
+          <td class="py-2">{{ status_badge(a.status) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% else %}
+    <p class="text-sm text-gray-400">No allocation history.</p>
+    {% endif %}
+  </div>
+
+  <div class="lg:col-span-3 bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+    <h2 class="font-semibold mb-3 text-sm text-gray-500 uppercase">Maintenance History</h2>
+    {% if asset.maintenance_requests %}
+    <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="text-gray-500 text-xs uppercase">
+        <tr><th class="text-left py-2">Description</th><th class="text-left py-2">Priority</th><th class="text-left py-2">Raised By</th><th class="text-left py-2">Status</th><th class="text-left py-2">Raised On</th></tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        {% for m in asset.maintenance_requests %}
+        <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='{{ url_for('maintenance.detail', id=m.id) }}'">
+          <td class="py-2">{{ m.description[:60] }}{% if m.description|length > 60 %}…{% endif %}</td>
+          <td class="py-2 capitalize">{{ m.priority }}</td>
+          <td class="py-2">{{ m.raised_by.name }}</td>
+          <td class="py-2">{{ status_badge(m.status) }}</td>
+          <td class="py-2">{{ m.created_at.strftime('%Y-%m-%d') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% else %}
+    <p class="text-sm text-gray-400">No maintenance history.</p>
+    {% endif %}
+  </div>
+
+  {% if asset.is_shared %}
+  <div class="lg:col-span-3 bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+    <h2 class="font-semibold mb-3 text-sm text-gray-500 uppercase">Booking History</h2>
+    {% if asset.bookings %}
+    <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="text-gray-500 text-xs uppercase">
+        <tr><th class="text-left py-2">Booked By</th><th class="text-left py-2">Start</th><th class="text-left py-2">End</th><th class="text-left py-2">Status</th></tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        {% for b in asset.bookings %}
+        <tr>
+          <td class="py-2">{{ b.user.name }}</td>
+          <td class="py-2">{{ b.start_time.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td class="py-2">{{ b.end_time.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td class="py-2">{{ status_badge(b.status) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% else %}
+    <p class="text-sm text-gray-400">No bookings yet.</p>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

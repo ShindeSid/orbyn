@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% from "_status_badge.html" import status_badge %}
+{% block title %}Assets — Orbyn{% endblock %}
+{% block content %}
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
+  <h1 class="text-2xl font-bold">Asset Directory</h1>
+  {% if current_user.role in ['admin', 'asset_manager'] %}
+  <a href="{{ url_for('assets.register') }}" class="bg-brand-600 text-white px-4 py-2 rounded-md hover:bg-brand-700 text-sm font-medium text-center">+ Register Asset</a>
+  {% endif %}
+</div>
+
+<form method="GET" class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 mb-6 grid grid-cols-1 md:grid-cols-5 gap-3">
+  <input type="text" name="search" value="{{ filters.search }}" placeholder="Search by tag, name, serial..." class="md:col-span-2 px-3 py-2 border border-gray-300 rounded-md text-sm">
+  <select name="status" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+    <option value="">All statuses</option>
+    {% for s in statuses %}
+    <option value="{{ s }}" {% if filters.status == s %}selected{% endif %}>{{ s.replace('_', ' ') }}</option>
+    {% endfor %}
+  </select>
+  <select name="category_id" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+    <option value="">All categories</option>
+    {% for cat in categories %}
+    <option value="{{ cat.id }}" {% if filters.category_id|string == cat.id|string %}selected{% endif %}>{{ cat.name }}</option>
+    {% endfor %}
+  </select>
+  <input type="text" name="location" value="{{ filters.location }}" placeholder="Location" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+  <button type="submit" class="md:col-span-5 bg-gray-800 text-white px-4 py-2 rounded-md text-sm hover:bg-gray-900">Filter</button>
+</form>
+
+<div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-x-auto">
+  <table class="w-full text-sm min-w-[700px]">
+    <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
+      <tr>
+        <th class="text-left px-4 py-3">Tag</th>
+        <th class="text-left px-4 py-3">Name</th>
+        <th class="text-left px-4 py-3">Category</th>
+        <th class="text-left px-4 py-3">Status</th>
+        <th class="text-left px-4 py-3">Location</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      {% for asset in assets %}
+      <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='{{ url_for('assets.detail', id=asset.id) }}'">
+        <td class="px-4 py-3 font-mono text-brand-700">{{ asset.tag }}</td>
+        <td class="px-4 py-3 font-medium">{{ asset.name }}</td>
+        <td class="px-4 py-3 text-gray-600">{{ asset.category.name }}</td>
+        <td class="px-4 py-3">{{ status_badge(asset.status) }}</td>
+        <td class="px-4 py-3 text-gray-600">{{ asset.location }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="px-4 py-8 text-center text-gray-400">No assets found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if pagination.pages > 1 %}
+<div class="flex justify-center gap-2 mt-4 text-sm">
+  {% for p in range(1, pagination.pages + 1) %}
+  <a href="{{ url_for('assets.list_assets', page=p, **filters) }}" class="px-3 py-1 rounded {% if p == pagination.page %}bg-brand-600 text-white{% else %}bg-white border border-gray-300 text-gray-600 hover:bg-gray-50{% endif %}">{{ p }}</a>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
