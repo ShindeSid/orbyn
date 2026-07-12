@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Return Asset — Orbyn{% endblock %}
+{% block content %}
+<div class="max-w-lg mx-auto">
+  <h1 class="text-2xl font-bold mb-6">Return Asset</h1>
+
+  <form method="POST" class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <p class="mb-4 text-sm text-gray-600">Asset: <span class="font-medium">{{ asset.tag }} — {{ asset.name }}</span></p>
+    <p class="mb-4 text-sm text-gray-600">Currently held by: <span class="font-medium">{{ allocation.holder_name }}</span></p>
+
+    <label class="block text-sm font-medium mb-1">Condition Check-in Notes (optional)</label>
+    <textarea name="condition_notes" maxlength="500" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Any damage, wear, or notes about the asset's condition on return"></textarea>
+
+    <button type="submit" class="mt-4 bg-green-600 text-white px-5 py-2.5 rounded-md hover:bg-green-700 font-medium">
+      Confirm Return
+    </button>
+  </form>
+</div>
+{% endblock %}
