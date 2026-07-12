@@ -245,11 +245,9 @@ Create Audit Cycle (scoped to department/location)
 
 ---
 
-## Demo Video Script
-
 ### Setup: Demo Accounts
 
-10 demo users across 4 roles, 4 enterprises. All use password: `Password123!`
+10 demo users across 4 roles, 4 enterprises.
 
 | # | Role | Enterprise | Name | Email |
 |---|---|---|---|---|
