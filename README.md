@@ -182,15 +182,149 @@ DATABASE_URL=sqlite:///orbyn.db
 SECRET_KEY=your-secret-key
 ```
 
+## System Flowchart
+
+### Core Workflows
+
+**1. Asset Allocation (Conflict-Free)**
+```
+Select Asset → Select User → [ATOMIC CHECK]
+                              ├─ Available? → Allocate (asset status = in_use)
+                              └─ Held by X? → Suggest Transfer Request
+```
+
+**2. Transfer Request (Queued Handoffs)**
+```
+Employee wants asset held by another → File Transfer Request
+  → Asset Manager reviews & approves
+    → Current holder notified to return
+      → On return → Auto-allocate to requester
+```
+
+**3. Booking (Interval-Scheduled Resources)**
+```
+Select Resource → Choose Time Slot → [OVERLAP CHECK]
+                                      ├─ No conflict? → Booking created (state: upcoming)
+                                      └─ Conflict? → Reject, suggest alternate slot
+                                      
+Background Scheduler (every 60s):
+  upcoming → ongoing (when start_time reached)
+  ongoing → completed (when end_time passed)
+  Send reminders 30min before start
+```
+
+**4. Maintenance (5-Stage Kanban)**
+```
+Submit Request → Pending
+  → Asset Manager Approves → asset.status = under_maintenance
+    → Assigned → Technician assigned
+      → In Progress → Repair underway
+        → Resolved → asset.status = available (notify requester)
+```
+
+**5. Audit (Verification & Discrepancy Detection)**
+```
+Create Audit Cycle (scoped to department/location)
+  → Auto-populate assets in scope
+    → Auditors verify: Verified / Missing / Damaged
+      → Close Cycle
+        → Auto-detect: Missing → lost, Damaged → poor condition
+          → Generate Discrepancy Report (compliance trail)
+```
+
+### Background Scheduler (Every 60 seconds)
+- Advance booking states (upcoming → ongoing → completed)
+- Flag overdue allocations (return past due date)
+- Send booking reminders (30min before start)
+- Prepare maintenance frequency reports
+
+### Data Persistence
+- **Activity Log**: Every action timestamped (allocate, approve, verify, return, etc.)
+- **Notifications**: Real-time alerts to stakeholders
+- **Audit Trail**: Full compliance record for disputes & investigations
+
+---
+
+## Demo Video Script
+
+### Setup: Demo Accounts
+
+10 demo users across 4 roles, 4 enterprises. All use password: `Password123!`
+
+| # | Role | Enterprise | Name | Email |
+|---|---|---|---|---|
+| 1 | Admin | Acme Manufacturing | Kiara Gupta | kiara.gupta@acmemfg.com |
+| 2 | Asset Manager | Acme Manufacturing | Diya Dutta | diya.dutta@acmemfg.com |
+| 3 | Dept Head | Acme Manufacturing | Diya Bose | diya.bose@acmemfg.com |
+| 4 | Employee | Acme Manufacturing | Ira Rao | ira.rao@acmemfg.com |
+| 5 | Asset Manager | Globex Technologies | Sai Joshi | sai.joshi@globextech.com |
+| 6 | Dept Head | Globex Technologies | Ananya Chatterjee | ananya.chatterjee@globextech.com |
+| 7 | Employee | Globex Technologies | Ananya Reddy | ananya.reddy@globextech.com |
+| 8 | Dept Head | Initech Solutions | Rohan Mukherjee | rohan.mukherjee@initech.com |
+| 9 | Employee | Initech Solutions | Zara Mukherjee | zara.mukherjee@initech.com |
+| 10 | Employee | Umbrella Logistics | Rohan Krishnan | rohan.krishnan@umbrellalog.com |
+
+### Script (8-10 minutes)
+
+**[OPEN LANDING PAGE]**
+
+"Meet Orbyn. An enterprise asset and resource management system that stops organizations from losing track of what they own. Picture this: A company with 500 laptops, 20 conference rooms, 10 delivery vans, and hundreds of employees. Where's that printer your team needs? Who has the projector? When can I book the meeting room? Without Orbyn, the answers live in spreadsheets, Slack messages, and people's memory. With Orbyn, everything is tracked, allocated, and audited in real time. Let me show you how it works."
+
+**[CLICK GET STARTED → SIGNUP with Ira Rao's account]**
+
+"First, you sign up. Any new user starts as an Employee. Roles get promoted later by an Admin from the Employee Directory."
+
+**[LOGGED IN - DASHBOARD]**
+
+"Welcome to the dashboard. You can see at a glance: Total assets, how many are in use, how many are available, any under maintenance or lost, and overdue items. Now let's walk through the five core workflows that make Orbyn work."
+
+**WORKFLOW #1: ALLOCATION (Conflict-Free)**
+
+"[Login as Diya Dutta - Asset Manager] Diya is responsible for allocating assets. Let's give a laptop to Ira. [Click Allocate → Select Asset AF-0114 (Dell Laptop) → Select User (Ira Rao) → Submit] Notice what happened. Orbyn didn't just randomly hand out the laptop. Behind the scenes, it ran an atomic check: 'Is this laptop available right now?' If two people had tried to allocate the same laptop at the exact same time, the system would detect it and only one allocation would succeed. The other person would see 'This asset is already held by someone else. File a Transfer Request instead?' This is an OS-inspired pattern. Just like an OS won't give the same memory block to two programs, Orbyn won't hand the same asset to two people. No conflicts. No disputes."
+
+**WORKFLOW #2: TRANSFER REQUEST (Queued Handoffs)**
+
+"[Login as Ananya Reddy - Employee] Now Ananya also needs that laptop urgently. She can't just take it. Instead, she requests a transfer. [Click Allocate → Select same laptop → System: 'Currently held by Ira Rao. File Transfer Request?' → File Transfer Request] The system created a queued transfer. An Asset Manager has to approve it. Once approved, Ira gets a notification to return the laptop. When he does, it automatically transfers to Ananya. This avoids deadlock. Instead of people fighting over resources, we have a clear handoff queue."
+
+**WORKFLOW #3: BOOKING (Interval-Scheduled Resources)**
+
+"[Login as Rohan Krishnan - Employee] Rohan wants to book the conference room for a team meeting. [Click Booking → Select 'Conference Room A' → Choose Today 2 PM - 3 PM → Submit] The system checked: 'Is anyone else already booked for this time?' Using overlap-detection logic an OS scheduler uses for CPU time-slices, Orbyn blocks double-bookings automatically. If someone had booked 2:30 PM - 3:30 PM, it would say 'Not available. Try 1 PM - 2 PM instead.' No more scheduling disasters."
+
+**WORKFLOW #4: MAINTENANCE (5-Stage Kanban)**
+
+"[Login as Ira Rao - Employee] Ira's laptop has a broken keyboard. [Click Maintenance → Create Request → Select Asset AF-0114 → Describe 'Keyboard keys not responding' → Set Priority High → Submit] Notice the laptop's status changed to 'Under Maintenance'. It flows through five stages: Pending → Approved → Assigned → In Progress → Resolved. Each stage is clear. [Login as Diya Dutta] Diya sees the request, approves it, assigns a technician. The technician starts the repair. Once done, the laptop goes back to 'Available' and Ira gets a notification."
+
+**WORKFLOW #5: AUDIT (Verification & Discrepancy Detection)**
+
+"[Login as Kiara Gupta - Admin] Kiara decides to audit the Bengaluru office. [Click Audit → Create Cycle → Select Scope 'Bengaluru HQ - Engineering' → Assign Auditors] The system auto-populates every asset that's supposed to be there. Auditors physically walk through and check: 'Verified' - it's here, 'Missing' - not found, 'Damaged' - it's broken. When the cycle closes, Orbyn auto-generates a report. Missing assets are marked 'Lost', damaged assets drop to 'Poor' condition. The discrepancy report goes straight to Finance."
+
+**BACKGROUND AUTOMATION**
+
+"Behind the scenes, a scheduler runs continuously. Every 60 seconds in dev, or via daily cron in production, it: Advances booking states (upcoming → ongoing → completed), sends reminders 30min before meetings, flags overdue allocations, and generates alerts. All invisible automation that doesn't get in the way."
+
+**REPORTS & ANALYTICS**
+
+"[Click Reports] Orbyn gives you dashboards: Utilization rankings, maintenance history, department allocation summary, asset retirement warnings, booking heatmap. Everything's exportable to CSV for Finance and Compliance."
+
+**ACTIVITY LOG**
+
+"[Click Notifications/Activity] Every single action is logged. 'Kiara allocated AF-0114 at 2:15 PM.' 'Ira filed a transfer request at 3:30 PM.' 'Diya approved maintenance at 4:05 PM.' This is critical for compliance. If there's ever a dispute, the answer is always in the activity log."
+
+**CLOSING**
+
+"At its heart, Orbyn solves one problem: Organizations lose track of physical assets. Spreadsheets get out of sync. Equipment gets double-booked. Maintenance gets lost in email. Orbyn centralizes everything. Allocations are atomic - no conflicts. Bookings check for overlaps automatically. Maintenance flows through a clear kanban. Audits catch discrepancies and generate reports. The result? No more lost assets. No more double-bookings. No more equipment collecting dust because no one knew it existed. Sign up today and never lose track of an asset again."
+
+---
+
 ## Color Design System
 
 | Token | Value | Usage |
 |---|---|---|
-| Brand 700 | `#3730a3` | Nav bar |
-| Brand 600 | `#4338ca` | Buttons, links, active states |
-| Brand 500 | `#4f46e5` | Focus rings, accents |
-| Brand 100 | `#e0e7ff` | Subtle highlights |
-| Brand 50 | `#eef2ff` | Hover backgrounds |
+| Brand 700 | `#0e7490` | Nav bar (teal) |
+| Brand 600 | `#0891b2` | Buttons, links, active states (cyan) |
+| Brand 500 | `#06b6d4` | Focus rings, accents (light cyan) |
+| Brand 100 | `#cffafe` | Subtle highlights |
+| Brand 50 | `#ecfeff` | Hover backgrounds (very light cyan) |
 | Success | Tailwind `green-600` | Approved, verified, available states |
 | Warning | Tailwind `amber-600` | Under maintenance, pending states |
 | Danger | Tailwind `red-600` | Overdue, rejected, lost/damaged states |
