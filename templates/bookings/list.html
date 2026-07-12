@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% from "_status_badge.html" import status_badge %}
+{% block title %}My Bookings — Orbyn{% endblock %}
+{% block content %}
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
+  <h1 class="text-2xl font-bold">My Bookings</h1>
+  <a href="{{ url_for('bookings.create') }}" class="bg-brand-600 text-white px-4 py-2 rounded-md hover:bg-brand-700 text-sm font-medium text-center">+ Book Resource</a>
+</div>
+
+<div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-x-auto">
+  <table class="w-full text-sm min-w-[640px]">
+    <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
+      <tr>
+        <th class="text-left px-4 py-3">Resource</th>
+        <th class="text-left px-4 py-3">Start</th>
+        <th class="text-left px-4 py-3">End</th>
+        <th class="text-left px-4 py-3">Status</th>
+        <th class="text-left px-4 py-3"></th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      {% for b in bookings %}
+      <tr>
+        <td class="px-4 py-3 font-medium">{{ b.asset.name }}</td>
+        <td class="px-4 py-3">{{ b.start_time.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td class="px-4 py-3">{{ b.end_time.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td class="px-4 py-3">{{ status_badge(b.status) }}</td>
+        <td class="px-4 py-3">
+          {% if b.status in ['upcoming', 'ongoing'] %}
+          <form method="POST" action="{{ url_for('bookings.cancel', id=b.id) }}" onsubmit="return confirm('Cancel this booking?');">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="text-red-600 hover:underline text-xs">Cancel</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="px-4 py-8 text-center text-gray-400">No bookings yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
