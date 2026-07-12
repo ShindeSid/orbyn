@@ -1,14 +1,48 @@
 {% extends "base.html" %}
 {% block title %}Sign Up - Orbyn{% endblock %}
 {% block content %}
-<div class="max-w-md mx-auto mt-6 md:mt-16">
-  <div class="text-center mb-6">
-    <div class="mx-auto h-14 w-14 rounded-full bg-brand-600 text-white flex items-center justify-center text-xl font-bold">O</div>
-    <h1 class="text-2xl font-bold mt-3">Create your account</h1>
-    <p class="text-sm text-gray-500 mt-1">Signup creates an Employee account. Roles are assigned later by an Admin.</p>
+<div class="max-w-4xl mx-auto mt-6 md:mt-12 rounded-xl overflow-hidden shadow-lg border border-gray-100 grid grid-cols-1 md:grid-cols-2">
+
+  <div class="bg-slate-900 text-white p-8 md:p-10 flex flex-col justify-center">
+    <div class="mx-auto md:mx-0 h-16 w-16 rounded-2xl bg-white flex items-center justify-center p-2 mb-5">
+      <img src="{{ url_for('static', filename='logo.svg') }}" alt="Orbyn" class="h-full w-full">
+    </div>
+    <h1 class="text-xl font-bold text-center md:text-left">Orbyn</h1>
+    <p class="text-slate-400 text-sm text-center md:text-left mt-1 mb-6">Enterprise Asset &amp; Resource Management</p>
+    <p class="text-slate-300 text-sm text-center md:text-left mb-8">
+      Join and get instant access to conflict-free asset allocation, interval-scheduled
+      bookings, and full audit trails.
+    </p>
+
+    <div class="space-y-5">
+      <div class="flex gap-3">
+        <div class="h-6 w-6 shrink-0 rounded-full bg-brand-600 text-white text-xs font-bold flex items-center justify-center">1</div>
+        <div>
+          <p class="font-semibold text-sm">Create your account</p>
+          <p class="text-slate-400 text-xs mt-0.5">Free, no credit card needed</p>
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <div class="h-6 w-6 shrink-0 rounded-full bg-brand-600 text-white text-xs font-bold flex items-center justify-center">2</div>
+        <div>
+          <p class="font-semibold text-sm">Get assigned a role</p>
+          <p class="text-slate-400 text-xs mt-0.5">An Admin promotes you when ready</p>
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <div class="h-6 w-6 shrink-0 rounded-full bg-brand-600 text-white text-xs font-bold flex items-center justify-center">3</div>
+        <div>
+          <p class="font-semibold text-sm">Start managing assets</p>
+          <p class="text-slate-400 text-xs mt-0.5">Register, allocate, and book in minutes</p>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+  <div class="bg-white p-8 md:p-10 flex flex-col justify-center">
+    <h2 class="text-2xl font-bold">Create account</h2>
+    <p class="text-sm text-gray-500 mt-1 mb-6">Signup creates an Employee account. Roles are assigned later by an Admin.</p>
+
     <form method="POST" novalidate>
       {{ form.hidden_tag() }}
 
@@ -45,5 +79,6 @@
       Already have an account? <a href="{{ url_for('auth.login') }}" class="text-brand-600 hover:underline">Log in</a>
     </p>
   </div>
+
 </div>
 {% endblock %}

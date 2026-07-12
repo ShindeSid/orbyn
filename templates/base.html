@@ -11,27 +11,32 @@
         extend: {
           colors: {
             brand: {
-              50: '#eef2ff', 100: '#e0e7ff', 500: '#4f46e5', 600: '#4338ca', 700: '#3730a3',
+              50: '#ecfeff', 100: '#cffafe', 500: '#06b6d4', 600: '#0891b2', 700: '#0e7490',
             },
           },
         },
       },
     }
   </script>
-  <link rel="icon" href="data:,">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='logo.svg') }}">
   <style>[x-cloak]{display:none}</style>
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col">
   <nav class="bg-brand-700 text-white sticky top-0 z-40 shadow-md">
     <div class="max-w-7xl mx-auto px-4">
       <div class="flex justify-between items-center h-14">
-        <a href="{{ url_for('home') }}" class="text-xl font-bold tracking-tight">Orbyn</a>
+        <a href="{{ url_for('home') }}" class="flex items-center gap-2 text-xl font-bold tracking-tight">
+          <img src="{{ url_for('static', filename='logo.svg') }}" alt="Orbyn" class="h-7 w-7">
+          Orbyn
+        </a>
 
+        {% if current_user.is_authenticated %}
         <button id="hamburger-btn" class="md:hidden p-2 rounded hover:bg-brand-600" aria-label="Menu">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
+        {% endif %}
 
         {% if current_user.is_authenticated %}
         <div class="hidden md:flex items-center gap-1 text-sm">
@@ -64,7 +69,10 @@
           <a href="{{ url_for('auth.logout') }}" class="hover:bg-brand-600 px-3 py-2 rounded">Logout</a>
         </div>
         {% else %}
-        <a href="{{ url_for('auth.login') }}" class="hover:bg-brand-600 px-3 py-2 rounded text-sm">Login</a>
+        <div class="flex items-center gap-1 sm:gap-2 text-sm">
+          <a href="{{ url_for('auth.login') }}" class="hover:bg-brand-600 px-2 sm:px-3 py-2 rounded">Sign In</a>
+          <a href="{{ url_for('auth.signup') }}" class="bg-white text-brand-700 px-3 sm:px-4 py-2 rounded-md font-medium hover:bg-brand-50 whitespace-nowrap">Get Started &rarr;</a>
+        </div>
         {% endif %}
       </div>
 
