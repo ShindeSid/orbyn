@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Org Setup — Employee Directory{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Organization Setup</h1>
+{% include "admin/_tabs.html" %}
+
+<div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-x-auto">
+  <table class="w-full text-sm min-w-[720px]">
+    <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
+      <tr>
+        <th class="text-left px-4 py-3">Name</th>
+        <th class="text-left px-4 py-3">Email</th>
+        <th class="text-left px-4 py-3">Department</th>
+        <th class="text-left px-4 py-3">Role</th>
+        <th class="text-left px-4 py-3">Status</th>
+        <th class="text-left px-4 py-3">Save</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      {% for u in users %}
+      <tr>
+        <td class="px-4 py-3 font-medium">
+          {{ u.name }}
+          <form id="emp-form-{{ u.id }}" method="POST" action="{{ url_for('admin.update_employee', id=u.id) }}" class="hidden">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          </form>
+        </td>
+        <td class="px-4 py-3 text-gray-600">{{ u.email }}</td>
+        <td class="px-4 py-3">
+          <select form="emp-form-{{ u.id }}" name="department_id" class="border border-gray-300 rounded text-sm px-2 py-1">
+            <option value="">-- None --</option>
+            {% for d in departments %}
+            <option value="{{ d.id }}" {% if u.department_id == d.id %}selected{% endif %}>{{ d.name }}</option>
+            {% endfor %}
+          </select>
+        </td>
+        <td class="px-4 py-3">
+          <select form="emp-form-{{ u.id }}" name="role" class="border border-gray-300 rounded text-sm px-2 py-1">
+            {% for r in roles %}
+            <option value="{{ r }}" {% if u.role == r %}selected{% endif %}>{{ r.replace('_', ' ') }}</option>
+            {% endfor %}
+          </select>
+        </td>
+        <td class="px-4 py-3">
+          <select form="emp-form-{{ u.id }}" name="status" class="border border-gray-300 rounded text-sm px-2 py-1">
+            <option value="active" {% if u.status == 'active' %}selected{% endif %}>Active</option>
+            <option value="inactive" {% if u.status == 'inactive' %}selected{% endif %}>Inactive</option>
+          </select>
+        </td>
+        <td class="px-4 py-3">
+          <button type="submit" form="emp-form-{{ u.id }}" class="bg-brand-600 text-white px-3 py-1.5 rounded text-xs hover:bg-brand-700">Save</button>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="px-4 py-6 text-center text-gray-400">No employees yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<p class="text-xs text-gray-400 mt-3">This is the only place roles are assigned — Department Head and Asset Manager promotions happen here, never at signup.</p>
+{% endblock %}
