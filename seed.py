@@ -3,7 +3,7 @@ Seed Orbyn with a larger fake dataset: 5 enterprises, 20 employees each
 (100 users total), 15 assets each (75 assets total, mostly electronics).
 
 Orbyn's data model is single-tenant (no separate "Enterprise"/"Company"
-table) — each "enterprise" here is a top-level Department, since that's
+table) - each "enterprise" here is a top-level Department, since that's
 the existing org-unit concept the app already has. Run with:
 
     python seed.py

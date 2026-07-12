@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}Allocate Asset — Orbyn{% endblock %}
+{% block title %}Allocate Asset - Orbyn{% endblock %}
 {% block content %}
 <div class="max-w-2xl mx-auto">
   <h1 class="text-2xl font-bold mb-2">Allocate Asset</h1>
-  <p class="text-sm text-gray-500 mb-6">Assign an available asset to an employee or department. An asset already held by someone else can't be allocated again — you'll be offered a Transfer Request instead.</p>
+  <p class="text-sm text-gray-500 mb-6">Assign an available asset to an employee or department. An asset already held by someone else can't be allocated again - you'll be offered a Transfer Request instead.</p>
 
   <form method="POST" class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -13,7 +13,7 @@
         <select name="asset_id" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500">
           <option value="">-- Select an available asset --</option>
           {% for asset in assets %}
-          <option value="{{ asset.id }}" {% if preselect_asset_id == asset.id %}selected{% endif %}>{{ asset.tag }} — {{ asset.name }} ({{ asset.location }})</option>
+          <option value="{{ asset.id }}" {% if preselect_asset_id == asset.id %}selected{% endif %}>{{ asset.tag }} - {{ asset.name }} ({{ asset.location }})</option>
           {% endfor %}
         </select>
         {% if not assets %}

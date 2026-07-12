@@ -5,7 +5,7 @@ APScheduler thread alive between requests. A Vercel Cron Job hits this
 route on a schedule instead of a persistent loop ticking every 60s.
 
 Protected by a shared-secret header so it can't be triggered by anyone
-who finds the URL — Vercel's own cron requests include this automatically
+who finds the URL - Vercel's own cron requests include this automatically
 when CRON_SECRET is set as a project env var.
 """
 import os

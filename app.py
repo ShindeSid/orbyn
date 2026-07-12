@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, redirect, url_for
+from flask import Flask, redirect, render_template, url_for
 from flask_login import current_user
 from flask_wtf import CSRFProtect
 from datetime import datetime
@@ -56,7 +56,7 @@ def create_app(start_background_scheduler=True):
     def home():
         if current_user.is_authenticated:
             return redirect(url_for('dashboard.index'))
-        return redirect(url_for('auth.login'))
+        return render_template('landing.html')
 
     @app.context_processor
     def inject_globals():
@@ -67,7 +67,7 @@ def create_app(start_background_scheduler=True):
         return dict(unread_count=unread_count, now=datetime.utcnow)
 
     # On Vercel (or any serverless host), a function invocation doesn't stay
-    # alive long enough for an in-process APScheduler thread to be useful —
+    # alive long enough for an in-process APScheduler thread to be useful -
     # /api/cron/tick (routes/cron.py) does the same work, triggered by a
     # Vercel Cron Job instead. Only start the in-process loop for a real,
     # long-running server process.

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Reports & Analytics — Orbyn{% endblock %}
+{% block title %}Reports & Analytics - Orbyn{% endblock %}
 {% block content %}
 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
   <h1 class="text-2xl font-bold">Reports &amp; Analytics</h1>
@@ -12,7 +12,7 @@
     {% if most_used %}
     <ul class="text-sm divide-y divide-gray-100">
       {% for a, count in most_used %}
-      <li class="py-2 flex justify-between"><a href="{{ url_for('assets.detail', id=a.id) }}" class="text-brand-600 hover:underline">{{ a.tag }} — {{ a.name }}</a><span class="text-gray-500">{{ count }} activity events</span></li>
+      <li class="py-2 flex justify-between"><a href="{{ url_for('assets.detail', id=a.id) }}" class="text-brand-600 hover:underline">{{ a.tag }} - {{ a.name }}</a><span class="text-gray-500">{{ count }} activity events</span></li>
       {% endfor %}
     </ul>
     {% else %}<p class="text-sm text-gray-400">No activity yet.</p>{% endif %}
@@ -23,7 +23,7 @@
     {% if idle %}
     <ul class="text-sm divide-y divide-gray-100">
       {% for a, count in idle %}
-      <li class="py-2 flex justify-between"><a href="{{ url_for('assets.detail', id=a.id) }}" class="text-brand-600 hover:underline">{{ a.tag }} — {{ a.name }}</a><span class="text-gray-500">{{ count }} activity events</span></li>
+      <li class="py-2 flex justify-between"><a href="{{ url_for('assets.detail', id=a.id) }}" class="text-brand-600 hover:underline">{{ a.tag }} - {{ a.name }}</a><span class="text-gray-500">{{ count }} activity events</span></li>
       {% endfor %}
     </ul>
     {% else %}<p class="text-sm text-gray-400">No idle assets.</p>{% endif %}
@@ -56,7 +56,7 @@
     {% if nearing_retirement %}
     <ul class="text-sm divide-y divide-gray-100">
       {% for a in nearing_retirement %}
-      <li class="py-2 flex justify-between"><a href="{{ url_for('assets.detail', id=a.id) }}" class="text-brand-600 hover:underline">{{ a.tag }} — {{ a.name }}</a><span class="text-gray-500">acquired {{ a.acquisition_date.strftime('%Y-%m-%d') }}</span></li>
+      <li class="py-2 flex justify-between"><a href="{{ url_for('assets.detail', id=a.id) }}" class="text-brand-600 hover:underline">{{ a.tag }} - {{ a.name }}</a><span class="text-gray-500">acquired {{ a.acquisition_date.strftime('%Y-%m-%d') }}</span></li>
       {% endfor %}
     </ul>
     {% else %}<p class="text-sm text-gray-400">None.</p>{% endif %}
@@ -67,7 +67,7 @@
     {% if due_for_maintenance %}
     <ul class="text-sm divide-y divide-gray-100">
       {% for a, days_left in due_for_maintenance %}
-      <li class="py-2 flex justify-between"><a href="{{ url_for('assets.detail', id=a.id) }}" class="text-brand-600 hover:underline">{{ a.tag }} — {{ a.name }}</a><span class="text-gray-500">{{ days_left }} day(s) left</span></li>
+      <li class="py-2 flex justify-between"><a href="{{ url_for('assets.detail', id=a.id) }}" class="text-brand-600 hover:underline">{{ a.tag }} - {{ a.name }}</a><span class="text-gray-500">{{ days_left }} day(s) left</span></li>
       {% endfor %}
     </ul>
     {% else %}<p class="text-sm text-gray-400">None.</p>{% endif %}
@@ -78,7 +78,7 @@
   <h2 class="text-sm font-semibold text-gray-500 uppercase mb-3">Resource Booking Heatmap (by hour of day)</h2>
   <div class="flex items-end gap-1 h-32">
     {% for hour, count in heatmap_data %}
-    <div class="flex-1 flex flex-col items-center justify-end h-full" title="{{ hour }}:00 — {{ count }} bookings">
+    <div class="flex-1 flex flex-col items-center justify-end h-full" title="{{ hour }}:00 - {{ count }} bookings">
       <div class="w-full bg-brand-500 rounded-t" style="height: {{ (count / max_heat * 100)|round(0, 'floor') }}%; min-height: {{ 2 if count else 0 }}px;"></div>
       <span class="text-[9px] text-gray-400 mt-1">{{ hour }}</span>
     </div>

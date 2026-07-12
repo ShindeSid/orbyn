@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Org Setup — Departments{% endblock %}
+{% block title %}Org Setup - Departments{% endblock %}
 {% block content %}
 <h1 class="text-2xl font-bold mb-4">Organization Setup</h1>
 {% include "admin/_tabs.html" %}
@@ -20,8 +20,8 @@
         {% for dept in departments %}
         <tr>
           <td class="px-4 py-3 font-medium">{{ dept.name }}</td>
-          <td class="px-4 py-3 text-gray-600">{{ dept.head.name if dept.head else '—' }}</td>
-          <td class="px-4 py-3 text-gray-600">{{ dept.parent.name if dept.parent else '—' }}</td>
+          <td class="px-4 py-3 text-gray-600">{{ dept.head.name if dept.head else '-' }}</td>
+          <td class="px-4 py-3 text-gray-600">{{ dept.parent.name if dept.parent else '-' }}</td>
           <td class="px-4 py-3">
             <span class="px-2 py-0.5 rounded-full text-xs font-medium {% if dept.status == 'active' %}bg-green-100 text-green-700{% else %}bg-gray-100 text-gray-600{% endif %}">{{ dept.status }}</span>
           </td>

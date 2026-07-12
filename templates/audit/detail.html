@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% from "_status_badge.html" import status_badge %}
-{% block title %}{{ cycle.name }} — Orbyn{% endblock %}
+{% block title %}{{ cycle.name }} - Orbyn{% endblock %}
 {% block content %}
 <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
   <div>
@@ -23,7 +23,7 @@
 
 {% if cycle.discrepancy_count %}
 <div class="bg-amber-50 border border-amber-200 text-amber-800 rounded-lg p-4 mb-6 text-sm">
-  {{ cycle.discrepancy_count }} asset(s) flagged — discrepancy report auto-generated below.
+  {{ cycle.discrepancy_count }} asset(s) flagged - discrepancy report auto-generated below.
 </div>
 {% endif %}
 
@@ -41,8 +41,8 @@
       {% for item in cycle.items %}
       <tr>
         <td class="px-4 py-3"><a href="{{ url_for('assets.detail', id=item.asset_id) }}" class="text-brand-600 hover:underline font-mono">{{ item.asset.tag }}</a> <span class="text-gray-500">{{ item.asset.name }}</span></td>
-        <td class="px-4 py-3 text-gray-600">{{ item.expected_location or '—' }}</td>
-        <td class="px-4 py-3 text-gray-600">{{ item.notes or '—' }}</td>
+        <td class="px-4 py-3 text-gray-600">{{ item.expected_location or '-' }}</td>
+        <td class="px-4 py-3 text-gray-600">{{ item.notes or '-' }}</td>
         <td class="px-4 py-3">
           {% if can_verify %}
           <form method="POST" action="{{ url_for('audit.verify_item', cycle_id=cycle.id, item_id=item.id) }}" class="flex flex-wrap items-center gap-2">

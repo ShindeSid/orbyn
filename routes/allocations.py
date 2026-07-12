@@ -6,7 +6,7 @@ resource-allocation table. Allocating is an *acquire*, returning is a
 *release*, and an asset (the resource) can only be held by one owner at a
 time. Rather than letting a second requester block indefinitely waiting on a
 held resource (the classic setup for deadlock), they file a Transfer
-Request — a queued ownership handoff that an Asset Manager / Department Head
+Request - a queued ownership handoff that an Asset Manager / Department Head
 approves, so the resource table never has two active holders for one asset.
 """
 from datetime import datetime

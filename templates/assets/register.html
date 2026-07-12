@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Register Asset — Orbyn{% endblock %}
+{% block title %}Register Asset - Orbyn{% endblock %}
 {% block content %}
 <div class="max-w-2xl mx-auto">
   <h1 class="text-2xl font-bold mb-6">Register Asset</h1>
@@ -21,7 +21,7 @@
           {% endfor %}
         </select>
         {% if not categories %}
-        <p class="text-xs text-amber-600 mt-1">No categories yet — create one in <a href="{{ url_for('admin.categories') }}" class="underline">Org Setup</a> first.</p>
+        <p class="text-xs text-amber-600 mt-1">No categories yet - create one in <a href="{{ url_for('admin.categories') }}" class="underline">Org Setup</a> first.</p>
         {% endif %}
       </div>
 

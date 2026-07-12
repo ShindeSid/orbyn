@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% from "_status_badge.html" import status_badge %}
-{% block title %}{{ asset.tag }} — Orbyn{% endblock %}
+{% block title %}{{ asset.tag }} - Orbyn{% endblock %}
 {% block content %}
 <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
   <div>
     <div class="flex items-center gap-3">
-      <h1 class="text-2xl font-bold">{{ asset.tag }} — {{ asset.name }}</h1>
+      <h1 class="text-2xl font-bold">{{ asset.tag }} - {{ asset.name }}</h1>
       {{ status_badge(asset.status) }}
     </div>
     <p class="text-sm text-gray-500 mt-1">{{ asset.category.name }} · {{ asset.location }}</p>
@@ -58,12 +58,12 @@
   <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
     <h2 class="font-semibold mb-3 text-sm text-gray-500 uppercase">Details</h2>
     <dl class="text-sm space-y-2">
-      <div class="flex justify-between"><dt class="text-gray-500">Serial Number</dt><dd>{{ asset.serial_number or '—' }}</dd></div>
+      <div class="flex justify-between"><dt class="text-gray-500">Serial Number</dt><dd>{{ asset.serial_number or '-' }}</dd></div>
       <div class="flex justify-between"><dt class="text-gray-500">Condition</dt><dd class="capitalize">{{ asset.condition }}</dd></div>
-      <div class="flex justify-between"><dt class="text-gray-500">Acquisition Date</dt><dd>{{ asset.acquisition_date.strftime('%Y-%m-%d') if asset.acquisition_date else '—' }}</dd></div>
-      <div class="flex justify-between"><dt class="text-gray-500">Acquisition Cost</dt><dd>{{ '%.2f'|format(asset.acquisition_cost) if asset.acquisition_cost else '—' }}</dd></div>
+      <div class="flex justify-between"><dt class="text-gray-500">Acquisition Date</dt><dd>{{ asset.acquisition_date.strftime('%Y-%m-%d') if asset.acquisition_date else '-' }}</dd></div>
+      <div class="flex justify-between"><dt class="text-gray-500">Acquisition Cost</dt><dd>{{ '%.2f'|format(asset.acquisition_cost) if asset.acquisition_cost else '-' }}</dd></div>
       <div class="flex justify-between"><dt class="text-gray-500">Shared / Bookable</dt><dd>{{ 'Yes' if asset.is_shared else 'No' }}</dd></div>
-      <div class="flex justify-between"><dt class="text-gray-500">Current Holder</dt><dd>{{ asset.current_allocation.holder_name if asset.current_allocation else '—' }}</dd></div>
+      <div class="flex justify-between"><dt class="text-gray-500">Current Holder</dt><dd>{{ asset.current_allocation.holder_name if asset.current_allocation else '-' }}</dd></div>
     </dl>
   </div>
 
@@ -79,8 +79,8 @@
         {% for a in asset.allocations %}
         <tr>
           <td class="py-2">{{ a.holder_name }}</td>
-          <td class="py-2">{{ a.allocated_date.strftime('%Y-%m-%d') if a.allocated_date else '—' }}</td>
-          <td class="py-2">{{ a.expected_return_date.strftime('%Y-%m-%d') if a.expected_return_date else '—' }}</td>
+          <td class="py-2">{{ a.allocated_date.strftime('%Y-%m-%d') if a.allocated_date else '-' }}</td>
+          <td class="py-2">{{ a.expected_return_date.strftime('%Y-%m-%d') if a.expected_return_date else '-' }}</td>
           <td class="py-2">{{ status_badge(a.status) }}</td>
         </tr>
         {% endfor %}

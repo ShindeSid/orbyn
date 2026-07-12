@@ -1,5 +1,5 @@
 """
-Background scheduler — the OS-style "tick" that sweeps Orbyn's resource
+Background scheduler - the OS-style "tick" that sweeps Orbyn's resource
 tables on a fixed interval, the same way an OS scheduler periodically
 re-evaluates process/resource state rather than reacting only to explicit
 syscalls. Each tick:

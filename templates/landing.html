@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Orbyn - Enterprise Asset & Resource Management{% endblock %}
+{% block content %}
+
+<section class="text-center py-12 md:py-20">
+  <div class="mx-auto h-16 w-16 rounded-2xl bg-brand-600 text-white flex items-center justify-center text-2xl font-bold mb-6">O</div>
+  <h1 class="text-3xl md:text-5xl font-bold tracking-tight text-gray-900 max-w-3xl mx-auto">
+    Asset management, built like an operating system
+  </h1>
+  <p class="text-base md:text-lg text-gray-500 mt-5 max-w-2xl mx-auto">
+    Orbyn tracks, allocates, books, maintains, and audits every physical asset your
+    organization owns - with conflict-free allocation, interval-scheduled bookings, and
+    full audit trails, replacing spreadsheets and paper logs for good.
+  </p>
+  <div class="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+    <a href="{{ url_for('auth.signup') }}" class="bg-brand-600 text-white px-6 py-3 rounded-md hover:bg-brand-700 font-medium">
+      Create an account
+    </a>
+    <a href="{{ url_for('auth.login') }}" class="bg-white text-brand-700 border border-gray-200 px-6 py-3 rounded-md hover:bg-gray-50 font-medium">
+      Log in
+    </a>
+  </div>
+</section>
+
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 py-8">
+  <div class="bg-white rounded-lg border border-gray-100 shadow-sm p-6">
+    <div class="h-10 w-10 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center text-lg mb-4">1</div>
+    <h3 class="font-semibold mb-2">Conflict-free allocation</h3>
+    <p class="text-sm text-gray-500">
+      Every allocation is checked atomically before it's granted, the same way an OS
+      won't hand a locked resource to two processes at once. No double-bookings, ever.
+    </p>
+  </div>
+  <div class="bg-white rounded-lg border border-gray-100 shadow-sm p-6">
+    <div class="h-10 w-10 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center text-lg mb-4">2</div>
+    <h3 class="font-semibold mb-2">Queued transfers, not deadlocks</h3>
+    <p class="text-sm text-gray-500">
+      Want an asset someone else holds? File a transfer request instead of waiting
+      indefinitely - approved by an Asset Manager or Department Head.
+    </p>
+  </div>
+  <div class="bg-white rounded-lg border border-gray-100 shadow-sm p-6">
+    <div class="h-10 w-10 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center text-lg mb-4">3</div>
+    <h3 class="font-semibold mb-2">Interval-scheduled bookings</h3>
+    <p class="text-sm text-gray-500">
+      Shared resources use the same overlap-detection logic an OS scheduler uses for
+      time-sliced reservations - no two people can double-book a conference room or van.
+    </p>
+  </div>
+  <div class="bg-white rounded-lg border border-gray-100 shadow-sm p-6">
+    <div class="h-10 w-10 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center text-lg mb-4">4</div>
+    <h3 class="font-semibold mb-2">Maintenance workflows</h3>
+    <p class="text-sm text-gray-500">
+      Requests flow through a 5-stage kanban - pending, approved, assigned, in
+      progress, resolved - with the asset's status updating automatically at each step.
+    </p>
+  </div>
+  <div class="bg-white rounded-lg border border-gray-100 shadow-sm p-6">
+    <div class="h-10 w-10 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center text-lg mb-4">5</div>
+    <h3 class="font-semibold mb-2">Audit cycles</h3>
+    <p class="text-sm text-gray-500">
+      Scope an audit to a department or location, verify every asset, and let Orbyn
+      auto-flag missing or damaged items with a generated discrepancy report.
+    </p>
+  </div>
+  <div class="bg-white rounded-lg border border-gray-100 shadow-sm p-6">
+    <div class="h-10 w-10 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center text-lg mb-4">6</div>
+    <h3 class="font-semibold mb-2">Reports that matter</h3>
+    <p class="text-sm text-gray-500">
+      Utilization, maintenance frequency, retirement warnings, and warranty expiry -
+      all in one dashboard, exportable to CSV whenever you need it.
+    </p>
+  </div>
+</section>
+
+<section class="bg-brand-700 text-white rounded-xl p-8 md:p-12 text-center my-8">
+  <h2 class="text-2xl md:text-3xl font-bold mb-3">Ready to see it in action?</h2>
+  <p class="text-brand-100 max-w-xl mx-auto mb-6">
+    Sign up in seconds - your account starts as an Employee, and an Admin can promote
+    roles later from the Employee Directory.
+  </p>
+  <a href="{{ url_for('auth.signup') }}" class="inline-block bg-white text-brand-700 px-6 py-3 rounded-md hover:bg-brand-50 font-medium">
+    Get started for free
+  </a>
+</section>
+
+{% endblock %}

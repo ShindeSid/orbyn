@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% from "_status_badge.html" import status_badge %}
-{% block title %}Maintenance Request — Orbyn{% endblock %}
+{% block title %}Maintenance Request - Orbyn{% endblock %}
 {% block content %}
 <div class="max-w-2xl mx-auto">
   <div class="flex items-center gap-3 mb-6">
@@ -10,7 +10,7 @@
 
   <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
     <dl class="text-sm space-y-3">
-      <div class="flex justify-between"><dt class="text-gray-500">Asset</dt><dd><a href="{{ url_for('assets.detail', id=req.asset.id) }}" class="text-brand-600 hover:underline">{{ req.asset.tag }} — {{ req.asset.name }}</a></dd></div>
+      <div class="flex justify-between"><dt class="text-gray-500">Asset</dt><dd><a href="{{ url_for('assets.detail', id=req.asset.id) }}" class="text-brand-600 hover:underline">{{ req.asset.tag }} - {{ req.asset.name }}</a></dd></div>
       <div class="flex justify-between"><dt class="text-gray-500">Raised By</dt><dd>{{ req.raised_by.name }}</dd></div>
       <div class="flex justify-between"><dt class="text-gray-500">Priority</dt><dd class="capitalize">{{ req.priority }}</dd></div>
       <div><dt class="text-gray-500 mb-1">Description</dt><dd class="text-gray-800">{{ req.description }}</dd></div>

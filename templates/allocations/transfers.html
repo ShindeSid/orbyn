@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% from "_status_badge.html" import status_badge %}
-{% block title %}Pending Transfers — Orbyn{% endblock %}
+{% block title %}Pending Transfers - Orbyn{% endblock %}
 {% block content %}
 <h1 class="text-2xl font-bold mb-6">Pending Transfer Requests</h1>
 
@@ -20,8 +20,8 @@
       <tr>
         <td class="px-4 py-3"><a href="{{ url_for('assets.detail', id=a.asset_id) }}" class="text-brand-600 hover:underline font-mono">{{ a.asset.tag }}</a></td>
         <td class="px-4 py-3">{{ a.holder_name }}</td>
-        <td class="px-4 py-3">{{ a.requested_by.name if a.requested_by else '—' }}</td>
-        <td class="px-4 py-3">{{ a.transfer_to_user.name if a.transfer_to_user else '—' }}</td>
+        <td class="px-4 py-3">{{ a.requested_by.name if a.requested_by else '-' }}</td>
+        <td class="px-4 py-3">{{ a.transfer_to_user.name if a.transfer_to_user else '-' }}</td>
         <td class="px-4 py-3">
           <div class="flex gap-2">
             <form method="POST" action="{{ url_for('allocations.transfer_approve', id=a.id) }}">

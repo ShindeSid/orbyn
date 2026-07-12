@@ -168,7 +168,7 @@ def resolve(id):
     req.resolved_at = datetime.utcnow()
     req.asset.status = 'available'
     log_activity(current_user.id, f'Resolved maintenance for {req.asset.tag}', 'maintenance', req.id)
-    notify(req.raised_by_id, f'Maintenance for {req.asset.tag} resolved — asset is available again', 'maintenance_approved', 'maintenance', req.id)
+    notify(req.raised_by_id, f'Maintenance for {req.asset.tag} resolved - asset is available again', 'maintenance_approved', 'maintenance', req.id)
     db.session.commit()
     flash(f'{req.asset.tag} marked available', 'success')
     return redirect(url_for('maintenance.detail', id=id))

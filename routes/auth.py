@@ -17,7 +17,7 @@ def signup():
     form = SignupForm()
     if form.validate_on_submit():
         # Signup always creates an Employee account. Role promotion happens only
-        # in Org Setup (Screen 3), by an Admin — never at signup.
+        # in Org Setup (Screen 3), by an Admin - never at signup.
         user = User(
             name=form.name.data.strip(),
             email=form.email.data.lower().strip(),

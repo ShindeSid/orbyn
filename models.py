@@ -146,7 +146,7 @@ class Allocation(db.Model):
             return self.user.name
         if self.department:
             return self.department.name
-        return '—'
+        return '-'
 
 
 class Booking(db.Model):

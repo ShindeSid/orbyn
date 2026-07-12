@@ -2,7 +2,7 @@
 Resource booking = interval scheduling over a shared device.
 
 Two bookings on the same asset conflict if their time intervals overlap:
-existing.start < new.end AND existing.end > new.start — the same interval
+existing.start < new.end AND existing.end > new.start - the same interval
 test an OS scheduler uses to detect clashing reservations on a device.
 """
 from datetime import datetime, timedelta
@@ -61,7 +61,7 @@ def create():
 
         if overlap:
             flash(
-                f'Time slot unavailable — {asset.name} is already booked '
+                f'Time slot unavailable - {asset.name} is already booked '
                 f'{overlap.start_time.strftime("%Y-%m-%d %H:%M")}–{overlap.end_time.strftime("%H:%M")}.',
                 'error',
             )
